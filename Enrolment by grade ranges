@@ -1,0 +1,5 @@
+--  determine different grade ranges by school
+select grade_range, sum(enrolment)
+from school_trimmed st 
+group by grade_range
+order by sum(enrolment) desc, grade_range
