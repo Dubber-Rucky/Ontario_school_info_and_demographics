@@ -1,0 +1,20 @@
+-- Total enrolment and percentage of low income households per school type
+
+select school_type, 
+	count(*) as num_schools, 
+	sum(enrolment) as total_enrol, 
+	concat(round(sum(enrolment*per_low_inc)/sum(enrolment)*100, 2), "%") as total_per_low_inc,
+	concat(round(sum(enrolment*per_spec_ed_services)/sum(enrolment)*100, 2), "%") as per_spec_ed_services_total,
+	concat(round(sum(enrolment*per_no_cred)/sum(enrolment)*100, 2), "%") as percent_no_cred_total
+from school_trimmed
+where school_type in ("Public","Catholic")
+	-- Ignore other types as there are only 7 total different schools in different category
+	-- Select school_type, count(*)as num_schools from school_trimmed group by school_type; 
+	-- Output: 	Public				3072
+	-- 			Catholic			1591
+	-- 			Hospital			3
+	-- 			Provincial			3
+	-- 			Protestant Separate	1
+group by school_type
+order by total_per_low_inc desc
+;
