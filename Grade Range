@@ -1,0 +1,12 @@
+-- determine different grade ranges by school, ordered by grade_range
+-- where JK as -1, K as 0 for order
+select grade_range, sum(enrolment)
+from school_trimmed st 
+group by grade_range
+order by (case
+	when first_name like 'JK%' then -1
+	when first_name like 'K%' THEN 0
+    else first_name*1 end),
+    first_name
+    ;
+;
