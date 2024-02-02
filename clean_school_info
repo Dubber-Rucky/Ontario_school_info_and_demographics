@@ -33,7 +33,7 @@ select 'City' as region, count(distinct city) as num_region
 from school_trimmed
 ;
 
-selex max(total) 
+select max(total) 
 from (select municipality, max(enrolment) as total 
 from school_trimmed 
 group by municipality)
