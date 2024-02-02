@@ -1,0 +1,123 @@
+-- CLEAN DATA IN EXCEL
+/* select columns and rename
+ * remove blanks from enrolment: 64 out of 4889 records removed
+ * remove 'SP' from enrolment: 155 out of 4825 records removed
+ * 869 records trimmed (find & replace ' ' with '')
+ * convert all percentages/numbers in text format (copy 1 + paste special > multiply)
+ * cleared cell contents containing in ('NA','N/D','NR'): 41249 cells cleared
+ * import table in csv format
+ * 
+ */
+
+-- GENERAL INFORMATION REGARDING TABLE
+
+	-- Column names
+SELECT column_name
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = 'school_trimmed'
+order by ordinal_position
+;
+	-- Total cities/municipality
+select 'Municipality' as region, 
+	count(distinct municipality) as num_region
+from school_trimmed
+union all
+select 'City' as region, count(distinct city) as num_region
+from school_trimmed
+;
+
+selex max(total) 
+from (select municipality, max(enrolment) as total 
+from school_trimmed 
+group by municipality)
+;
+
+
+select sum(case when per_thr_read is null then 1 end) as Reading, 
+	sum(case when per_thr_writing is null then 1 end) as Writing,
+	sum(case when per_thr_math is null then 1 end) as Math
+from school_trimmed
+union
+select sum(case when per_six_read is null then 1 end),
+	sum(case when per_six_writing is null then 1 end),
+	sum(case when per_six_math is null then 1 end)
+from school_trimmed
+;
+
+
+
+-- SCHOOL TYPE 
+
+	-- Total enrolment and percentage of low income households per school type
+select school_type, 
+	count(*) as num_schools, 
+	sum(enrolment) as total_enrol, 
+	concat(round(sum(enrolment*per_low_inc)/sum(enrolment)*100, 2), "%") as total_per_low_inc,
+	concat(round(sum(enrolment*per_spec_ed_services)/sum(enrolment)*100, 2), "%") as per_spec_ed_services_total,
+	concat(round(sum(enrolment*per_no_cred)/sum(enrolment)*100, 2), "%") as percent_no_cred_total
+from school_trimmed
+where school_type in ("Public","Catholic")
+	-- Ignore other types as there are only 7 total different schools in different category
+	-- Select school_type, count(*)as num_schools from school_trimmed group by school_type; 
+	-- Output: 	Public				3072
+	-- 			Catholic			1591
+	-- 			Hospital			3
+	-- 			Provincial			3
+	-- 			Protestant Separate	1
+group by school_type
+order by total_per_low_inc desc
+;
+
+	-- Enrolment grouped into different 
+select total_enrolment, sum(total), count(total) from (
+	select board_number, count(*), (
+		case
+			when sum(enrolment) > 2001 then '>2000'
+			when sum(enrolment) between 1001 and 2000 then 'Between 1000 and 2000'
+			when sum(enrolment) between 801 and 1000 then 'Between 800 and 1000'
+			when sum(enrolment) between 601 and 800 then 'Between 800 and 1000'
+			when sum(enrolment) between 200 and 600 then 'Between 200 and 600'
+			when sum(enrolment) <= 200 then 'Less than 200'
+			else 'NA'
+		end) as total_enrolment, sum(enrolment) as total
+	from school_trimmed
+	group by board_number) as table1
+group by total_enrolment
+;
+
+
+-- PERCENTAGE AND TOTAL OF GIFTED STUDENTS BY SCHOOL, CITY
+-- disregarding SP (suppressed results), display total gifted students per school
+select school_name, enrolment, 
+concat(cast(per_gifted*100 as signed int), "%") as rate_gifted, 
+floor(enrolment*per_gifted) as total_gifted
+from (
+	select school_name, enrolment, per_gifted
+	from school_trimmed) as table1
+order by total_gifted desc, enrolment desc
+;
+	-- display percentage of gifted students by the total per municipality...
+select municipality, 
+	sum(enrolment) as total_enrol,
+	concat(format(cast(sum(enrolment*per_gifted)/sum(enrolment)*100 as decimal(9,2)),2),"%") as per_gifted,
+	floor(sum(enrolment*per_gifted)) as total_gifted
+from (
+	select municipality,
+		enrolment,
+		per_gifted
+	from school_trimmed) as table1
+	-- ... to verify data, [eg) input: WHERE municipality = 'Kitchener'. output: percent_gifted = 0.21]
+group by municipality
+	-- ... ordered by total enrolment
+order by per_gifted desc, total_enrol desc
+;
+
+
+
+--  determine different grade ranges by school
+select grade_range, sum(enrolment)
+from school_trimmed st 
+group by grade_range
+order by sum(enrolment) desc, grade_range
+;
+
