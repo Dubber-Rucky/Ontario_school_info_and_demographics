@@ -1,10 +1,17 @@
+-- DESCRIPTION OF SOURCE
+/* https://data.ontario.ca/dataset/school-information-and-student-demographics
+ * https://www.ontario.ca/page/find-your-school
+ * https://www.app.edu.gov.on.ca/eng/sift/glossary.asp
+*/
+
 -- CLEAN DATA IN EXCEL
-/* select columns and rename
- * remove blanks from enrolment: 64 out of 4889 records removed
- * remove 'SP' from enrolment: 155 out of 4825 records removed
- * 869 records trimmed (find & replace ' ' with '')
+/* no duplicate values found [Remove Duplicates: 0 results]
+ * select columns and rename
+ * remove blanks from enrolment: [64 out of 4889 records removed]
+ * remove 'SP' from enrolment: [155 out of 4825 records removed]
+ * Find & Replace ' ' with '': [869 records trimmed]
  * convert all percentages/numbers in text format (copy 1 + paste special > multiply)
- * cleared cell contents containing in ('NA','N/D','NR'): 41249 cells cleared
+ * cleared cell contents containing in ('NA','N/D','NR'): [41249 cells cleared]
  * import table in csv format
  * 
  */
