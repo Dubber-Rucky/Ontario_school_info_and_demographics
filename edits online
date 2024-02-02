@@ -1,0 +1,10 @@
+select 'NOLA' prov, city, province_id, count(*)
+from (select * from patients where allergies is null and province_id = 'NL')
+union all
+select 'SASK' prov, city, province_id, count(*)
+from (select * from patients where allergies is null and province_id = 'SK')
+
+select province_id, count(*)
+from (select * from patients where allergies is null)
+group by province_id
+order by count(*)
